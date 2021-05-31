@@ -104,11 +104,11 @@ struct Dataset : public DatasetBase {
     uint64_t size;
     infile.read(reinterpret_cast<char *>(&size), sizeof(size));
     std::vector<Key> v(0);
-//
-//    for (int i = 0; i < size; ++i) {
-//      infile.read(reinterpret_cast<char *>(&key), sizeof(Key));
-//      v.push_back(key);
-//    }
+
+    for (int i = 0; i < size; ++i) {
+      infile.read(reinterpret_cast<char *>(&key), sizeof(Key));
+      v.push_back(key);
+    }
     return v;
   }
 
@@ -156,7 +156,7 @@ struct Dataset : public DatasetBase {
       fill(std::vector < Key > {std::istream_iterator < Key > {file},
                                 std::istream_iterator<Key>()});
     } else if (distribution == "bin") {
-      fill({});
+      fill(parse_bin(param[0]));
     } else {
       assert(!"No distribution found.");
     }
