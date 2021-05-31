@@ -98,13 +98,11 @@ struct Dataset : public DatasetBase {
   }
 
   auto parse_bin(std::string filename) {
-    std::cout << "AAA" << filename << std::endl;
     std::ifstream infile(filename, std::ios::binary);
 
     Key key;
     uint64_t size;
     infile.read(reinterpret_cast<char *>(&size), sizeof(size));
-    std::cout << "AAA" << size << std::endl;
     std::vector<Key> v(0);
 //
 //    for (int i = 0; i < size; ++i) {
@@ -154,12 +152,10 @@ struct Dataset : public DatasetBase {
       fill(cfal(shape));
     } else if (std::set < std::string > {"file", "fb", "wf", "lognormal"}.count(
         distribution) == 1) {
-      std::cout << "FILE" << std::endl;
       std::ifstream file{param[0]};
       fill(std::vector < Key > {std::istream_iterator < Key > {file},
                                 std::istream_iterator<Key>()});
     } else if (distribution == "bin") {
-      std::cout << "BIN" << std::endl;
       fill({});
     } else {
       assert(!"No distribution found.");
