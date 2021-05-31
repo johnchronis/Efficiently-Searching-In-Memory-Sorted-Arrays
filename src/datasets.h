@@ -20,8 +20,8 @@
 #include <vector>
 #include <memory>
 
-
-template <typename T> T parse(std::string s) {
+template<typename T>
+T parse(std::string s) {
   T t;
   std::stringstream(s) >> t;
   return t;
@@ -41,12 +41,12 @@ struct DatasetParam {
 
 struct DatasetBase {
   using DatasetMap =
-                std::map<DatasetParam::Tuple, std::unique_ptr<DatasetBase>>;
+  std::map<DatasetParam::Tuple, std::unique_ptr<DatasetBase>>;
 };
 
-
 // Parse and create the datasets, generate the keys or import from a file.
-template <int record_bytes> struct Dataset : public DatasetBase {
+template<int record_bytes>
+struct Dataset : public DatasetBase {
  private:
   auto uniform(long seed) {
     std::mt19937_64 rng(seed);
@@ -81,7 +81,7 @@ template <int record_bytes> struct Dataset : public DatasetBase {
     auto n = v.size();
     for (auto i = 0; i < v.size() - 1; i++) {
       // scale up to ensure elements are distinct for as long as possible
-      v[i] = pow((double)(n - i), -shape) * std::numeric_limits<Key>::max();
+      v[i] = pow((double) (n - i), -shape) * std::numeric_limits<Key>::max();
     }
     v.back() = std::numeric_limits<Key>::max();
     return v;
@@ -94,6 +94,23 @@ template <int record_bytes> struct Dataset : public DatasetBase {
     std::transform(v.begin(), v.end(), v.begin(),
                    [scale](auto x) { return x * scale; });
     std::partial_sum(v.begin(), v.end(), v.begin());
+    return v;
+  }
+
+  auto parse_bin(std::string filename) {
+    std::cout << "AAA" << filename << std::endl;
+    std::ifstream infile(filename, std::ios::binary);
+
+    Key key;
+    uint64_t size;
+    infile.read(reinterpret_cast<char *>(&size), sizeof(size));
+    std::cout << "AAA" << size << std::endl;
+    std::vector<Key> v(0);
+//
+//    for (int i = 0; i < size; ++i) {
+//      infile.read(reinterpret_cast<char *>(&key), sizeof(Key));
+//      v.push_back(key);
+//    }
     return v;
   }
 
@@ -113,7 +130,7 @@ template <int record_bytes> struct Dataset : public DatasetBase {
   unsigned long sum;
 
   Dataset(const long n, const std::string &distribution,
-        const std::vector<std::string> &params)
+          const std::vector<std::string> &params)
       : permuted_keys(n), keys(n) {
     auto param = params.begin();
     // datasetname - parameter
@@ -135,11 +152,15 @@ template <int record_bytes> struct Dataset : public DatasetBase {
     } else if (distribution == "cfal") {
       auto shape = parse<double>(param[0]);
       fill(cfal(shape));
-    } else if (std::set<std::string>{"file", "fb", "wf", "lognormal"}.count(
+    } else if (std::set < std::string > {"file", "fb", "wf", "lognormal"}.count(
         distribution) == 1) {
+      std::cout << "FILE" << std::endl;
       std::ifstream file{param[0]};
-      fill(std::vector<Key>{std::istream_iterator<Key>{file},
-                            std::istream_iterator<Key>()});
+      fill(std::vector < Key > {std::istream_iterator < Key > {file},
+                                std::istream_iterator<Key>()});
+    } else if (distribution == "bin") {
+      std::cout << "BIN" << std::endl;
+      fill({});
     } else {
       assert(!"No distribution found.");
     }
